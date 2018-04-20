@@ -1,0 +1,34 @@
+<html>
+<head>
+    <title>TetraVex</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>TetraVex</h1>
+    <div id="root">
+        <div id="game_inputs">
+            <div>Board Height: <input id="board_height" type="number" /></div>
+            <div>Board Width: <input id="board_width" type="number" /></div>
+        </div>
+
+        <div id="game_details">
+            <div>Timer: <span id="game_timer"></span></div>
+        </div>
+
+        <div id="game_buttons">
+            <button id="new_game">New Game</button>
+            <button id="pause_game">Pause</button>
+            <button id="reset_game">Reset</button>
+        </div>
+
+        <div id="game_board">
+            <div id="board"></div>
+            <div id="staging"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
