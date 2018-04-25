@@ -1,5 +1,7 @@
 html, body {
     height: 100%;
+    background-color: #333333;
+    color: #bbbbbb;
 }
 
 #root {
@@ -8,20 +10,16 @@ html, body {
 
 #game_board {
     width: 100%;
-    display: -ms-flex;
-    display: -webkit-flex;
-    display: flex;
+    height: 100%;
+    background-color: #777777;
 }
 
 #board {
     float: left;
+    padding-top: 10px;
+    padding-left: 10px;
 }
 
-#staging {
-    flex: 1;
-    background-color: #777777;
-    border: 1px dashed #555555;
-}
 
 /* #game_details {
     display: inline-block;
@@ -46,11 +44,13 @@ html, body {
 
 .piece {
     cursor: move;
-    position: relative;
+    position: absolute;
     width: 0;
     height: 0;
     border: 50px solid;
     border-color: #888 #eee #ccc #aaa;
+    color: #000000;
+    z-index: 1;
 }
 
 .piece > div {

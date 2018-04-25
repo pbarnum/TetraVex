@@ -9,7 +9,7 @@ const game = {
 };
 
 let htmlGameBoard;
-let htmlStaging;
+// let htmlStaging;
 let htmlBoardHeight;
 let htmlBoardWidth;
 let htmlTimer;
@@ -36,6 +36,7 @@ function newGameClick(event) {
   event.preventDefault();
   // get all input values
   // validate inputs (board no less than 2x2)
+  htmlTimer.innerHTML = '0 seconds';
   newGame();
 }
 
@@ -46,7 +47,7 @@ function pauseGameClick(event) {
 
 function newGame() {
   // set the staging area to the same height as the board
-  htmlStaging.style.height = `${htmlGameBoard.outerHeight}px`;
+  // htmlStaging.style.height = `${htmlGameBoard.outerHeight}px`;
   updateOptions({
     size: {
       height: htmlBoardHeight.value || 4,
@@ -58,6 +59,7 @@ function newGame() {
   htmlGenerateBoard();
 
   game.timer.seconds = 0;
+  clearInterval(game.timer.intervalId);
   game.timer.intervalId = setInterval(() => {
     game.timer.seconds = game.paused ? game.timer.seconds : game.timer.seconds + 1;
     htmlTimer.innerHTML = `${game.timer.seconds} second${game.timer.seconds === 1 ? '' : 's'}`;
@@ -128,29 +130,38 @@ function generateBoard() {
 
 function htmlGenerateBoard() {
   const htmlGameBoard = document.getElementById('board');
-  const htmlStaging = document.getElementById('staging');
+  // const htmlStaging = document.getElementById('staging');
   htmlGameBoard.innerHTML = '';
   let i = 0;
   for (let row = 0; row < game.options.size.height; ++row) {
     htmlGameBoard.innerHTML += `<div id="row_${row}" class="row">`;
     for (let col = 0; col < game.options.size.width; ++col) {
       htmlGameBoard.innerHTML += `<div id="row_${row}_col_${col}" class="col">
-        ${htmlGeneratePiece(game.pieces[i], i++)}
       </div>`;
     }
     htmlGameBoard.innerHTML += '</div>';
   }
 
   // Move all pieces to the staging area
-  Array.prototype.forEach.call(
-    document.getElementsByClassName('piece'),
-    (p) => {
-      // Move pieces to staging area
-      p.style.left = `${htmlStaging.offsetLeft}px`;
-      // Attach event listeners
-      p.addEventListener('mousedown', pieceMouseDownListener);
-    }
-  );
+  game.pieces.forEach((p, i) => {
+    let piece = document.createElement('div');
+    piece.innerHTML = htmlGeneratePiece(p, i);
+    piece = piece.firstChild;
+    document.body.appendChild(piece);
+
+    const padding = 10
+    const offsetLeft = htmlGameBoard.offsetWidth + 10 + padding + (i % game.options.size.width * (piece.offsetWidth + padding));
+    const offsetTop = htmlGameBoard.offsetTop + padding + (Math.floor(i/game.options.size.height) % game.options.size.height * (piece.offsetHeight + padding));
+    // Move pieces to staging area
+    piece.style.left = `${offsetLeft}px`;
+    piece.style.top = `${offsetTop}px`;
+    // Attach event listeners
+    piece.addEventListener('mousedown', pieceMouseDownListener);
+    // piece.addEventListener('mousemove', pieceMouseMoveListener);
+  });
+
+  document.body.onmousemove = pieceMouseMoveListener;
+  document.body.onmouseup = pieceMouseUpListener;
 }
 
 
@@ -207,20 +218,34 @@ function updateOptions(incomingObj = {}) {
   game.options = Object.assign({}, defaults, game.options, incomingObj);
 }
 
-// function setPosition(element) {
-//   element.style.top =
-// }
+function setPositionRelativeToMouse(el, event) {
+  const rect = el.getBoundingClientRect();
+  console.log(event.clientX, rect.top, (event.clientY - (event.clientY - rect.top)) + 'px');
+  el.style.top = (event.clientY + 12 - (rect.height / 2)) + 'px';
+  el.style.left = (event.clientX - (rect.width / 2)) + 'px';
+}
 
 /**
  * Listeners
  */
 function pieceMouseDownListener(event) {
   event.preventDefault();
-  const piece = getPieceById(this.id);
-  setPosition(this)
+  this.classList.add('moving');
+  this.style.zIndex = 2;
+  setPositionRelativeToMouse(this, event);
 }
 
-function pieceMoveListener(event) {
-
+function pieceMouseMoveListener(event) {
+  event.preventDefault();
+  Array.from(document.getElementsByClassName('moving')).forEach((p) => {
+    setPositionRelativeToMouse(p, event);
+  });
 }
 
+function pieceMouseUpListener(event) {
+  event.preventDefault();
+  Array.from(document.getElementsByClassName('moving')).forEach((p) => {
+    p.classList.remove('moving');
+    p.style.zIndex = 1;
+  });
+}
