@@ -8,19 +8,39 @@ const game = {
   }
 };
 
+const alerts = {
+  occupied: {
+    title: 'Invalid Move!',
+    body: 'You cannot place a tile on top of an existing tile DUMMY.',
+    cls: 'error'
+  },
+  noMatch: {
+    title: "Tiles don't match!",
+    body: "That piece doesn't match with any of its neighbors BIATCH",
+    cls: 'error'
+  },
+  end: {
+    title: 'You win!',
+    body: () => `You have solved the ${game.options.size.width} by ${game.options.size.height} puzzle in ${game.timer.seconds} seconds`,
+    cls: 'success',
+  }
+};
+
 let htmlGameBoard;
 // let htmlStaging;
 let htmlBoardHeight;
 let htmlBoardWidth;
 let htmlTimer;
+let htmlNotifier;
 
 // Initialization process
 (function () {
+  htmlPlayArea = document.getElementById('game_board');
   htmlGameBoard = document.getElementById('board');
-  htmlStaging = document.getElementById('staging');
   htmlBoardHeight = document.getElementById('board_height');
   htmlBoardWidth = document.getElementById('board_width');
   htmlTimer = document.getElementById('game_timer');
+  htmlNotifier = document.getElementById('notifier');
 
   newGame();
   // build board
@@ -54,6 +74,7 @@ function newGame() {
       width: htmlBoardWidth.value || 4
     }
   });
+  removeOldPieces();
   generateBoard();
   shuffleBoard();
   htmlGenerateBoard();
@@ -65,6 +86,12 @@ function newGame() {
     htmlTimer.innerHTML = `${game.timer.seconds} second${game.timer.seconds === 1 ? '' : 's'}`;
   }, 1000);
   togglePause(false);
+}
+
+function removeOldPieces() {
+  Array.from(document.getElementsByClassName('piece')).forEach((p) => {
+    p.parentNode.removeChild(p);
+  });
 }
 
 function togglePause(override) {
@@ -81,15 +108,20 @@ function startTimer() {
 }
 
 function isSolved() {
-  loopBoard((piece, pos) => {
-    id = 0;
-    game.pieces.forEach((p, i) => {
-      if (p == game.board[pos.row][pos.col]) {
-        id = i;
-        return;
-      }
-    });
-    console.log(piece == game.board[pos.row][pos.col], pos.row, pos.col, pos.index, 'loc on board', id);
+  let slots = Array.from(document.getElementsByClassName('slot'));
+  for (let i = 0; i < slots.length; ++i) {
+    if (!slots[i].dataset.pieceId) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function endGame() {
+  notify(alerts.end);
+  clearInterval(game.timer.intervalId);
+  Array.from(document.getElementsByClassName('piece')).forEach((p) => {
+    p.removeEventListener('mousedown', pieceMouseDownListener);
   });
 }
 
@@ -110,7 +142,6 @@ function loopBoard(callback) {
   }
 }
 
-// done
 function generateBoard() {
   game.board = [];
   game.pieces = [];
@@ -136,7 +167,7 @@ function htmlGenerateBoard() {
   for (let row = 0; row < game.options.size.height; ++row) {
     htmlGameBoard.innerHTML += `<div id="row_${row}" class="row">`;
     for (let col = 0; col < game.options.size.width; ++col) {
-      htmlGameBoard.innerHTML += `<div id="row_${row}_col_${col}" class="col">
+      htmlGameBoard.innerHTML += `<div id="row_${row}_col_${col}" class="col slot">
       </div>`;
     }
     htmlGameBoard.innerHTML += '</div>';
@@ -155,6 +186,8 @@ function htmlGenerateBoard() {
     // Move pieces to staging area
     piece.style.left = `${offsetLeft}px`;
     piece.style.top = `${offsetTop}px`;
+    piece.dataset.oldTop = piece.style.top;
+    piece.dataset.oldLeft = piece.style.left;
     // Attach event listeners
     piece.addEventListener('mousedown', pieceMouseDownListener);
     // piece.addEventListener('mousemove', pieceMouseMoveListener);
@@ -163,9 +196,6 @@ function htmlGenerateBoard() {
   document.body.onmousemove = pieceMouseMoveListener;
   document.body.onmouseup = pieceMouseUpListener;
 }
-
-
-// function movePieces
 
 function htmlGeneratePiece(piece, id) {
   return `<div id="piece_${id}" class="piece">
@@ -197,9 +227,9 @@ function newPiece(left, top, right, bottom) {
 }
 
 function getPieceById(id) {
-  pId = id.match(/(\d+)$/)[1];
-  if (pId) {
-    piece = game.pieces[pId];
+  pId = id.match(/(\d+)$/);
+  if (pId.length > 1) {
+    piece = game.pieces[pId[1]];
     if (piece) {
       return piece;
     }
@@ -220,9 +250,84 @@ function updateOptions(incomingObj = {}) {
 
 function setPositionRelativeToMouse(el, event) {
   const rect = el.getBoundingClientRect();
-  console.log(event.clientX, rect.top, (event.clientY - (event.clientY - rect.top)) + 'px');
-  el.style.top = (event.clientY + 12 - (rect.height / 2)) + 'px';
-  el.style.left = (event.clientX - (rect.width / 2)) + 'px';
+  const top = (event.clientY + window.scrollY - (rect.height / 2));
+  const left = (event.clientX + window.scrollX - (rect.width / 2));
+  const right = left + rect.width;
+  const bottom = top + rect.height;
+  if (top > htmlPlayArea.offsetTop
+    && left > htmlPlayArea.offsetLeft
+    && right < htmlPlayArea.offsetLeft + htmlPlayArea.offsetWidth
+    && bottom < htmlPlayArea.offsetTop + htmlPlayArea.offsetHeight
+  ) {
+    el.style.top = top + 'px';
+    el.style.left = left + 'px';
+    updatePieceSlot(el);
+  }
+}
+
+function updatePieceSlot(el) {
+  let current = 0;
+  let placeholder;
+  Array.from(document.getElementsByClassName('slot')).forEach((slot) => {
+    const intersect = intersectRectangles(slot.getBoundingClientRect(), el.getBoundingClientRect());
+    slot.classList.remove('placeholder');
+    if (intersect > 0 && intersect > current) {
+      current = intersect;
+      placeholder = slot;
+    }
+  });
+
+  if (placeholder) {
+    placeholder.classList.add('placeholder');
+  }
+}
+
+function intersectRectangles(rect1, rect2) {
+  xOverlap = Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left));
+  yOverlap = Math.max(0, Math.min(rect1.bottom, rect2.bottom) - Math.max(rect1.top, rect2.top));
+  return xOverlap * yOverlap;
+}
+
+function notify(notifyObj) {
+  let body = typeof notifyObj.body === 'string' ? notifyObj.body : notifyObj.body();
+  htmlNotifier.innerHTML = `
+    <div class="notify ${notifyObj.cls}">
+      <h1>${notifyObj.title}</h1>
+      <p>${body}</p>
+    </div>
+  `;
+}
+
+function getPiece(row, col) {
+  const slot = document.getElementById(`row_${row}_col_${col}`);
+  if (slot && slot.dataset.pieceId) {
+    return getPieceById(slot.dataset.pieceId);
+  }
+}
+
+function matchNeighbors(slot, piece) {
+  const pObj = getPieceById(piece.id);
+  const pos = slot.id.match(/row_(\d+)_col_(\d+)/);
+  if (pos.length > 1) {
+    const row = Number(pos[1]);
+    const col = Number(pos[2]);
+
+    const nTop = getPiece(row - 1, col);
+    const nLeft = getPiece(row, col - 1);
+    const nRight = getPiece(row, col + 1);
+    const nBottom = getPiece(row + 1, col);
+    console.log((!nTop || nTop.values.bottom === pObj.values.top),
+      (!nLeft || nLeft.values.right === pObj.values.left),
+      (!nRight || nRight.values.left === pObj.values.right),
+      (!nBottom || nBottom.values.top === pObj.values.bottom));
+    return (
+      (!nTop || nTop.values.bottom === pObj.values.top) &&
+      (!nLeft || nLeft.values.right === pObj.values.left) &&
+      (!nRight || nRight.values.left === pObj.values.right) &&
+      (!nBottom || nBottom.values.top === pObj.values.bottom)
+    );
+  }
+  return false;
 }
 
 /**
@@ -230,6 +335,12 @@ function setPositionRelativeToMouse(el, event) {
  */
 function pieceMouseDownListener(event) {
   event.preventDefault();
+  if (this.dataset.slotId) {
+    previousSlot = document.getElementById(this.dataset.slotId);
+    this.dataset.oldSlotId = this.dataset.slotId;
+    delete previousSlot.dataset.pieceId;
+    delete this.dataset.slotId;
+  }
   this.classList.add('moving');
   this.style.zIndex = 2;
   setPositionRelativeToMouse(this, event);
@@ -244,8 +355,62 @@ function pieceMouseMoveListener(event) {
 
 function pieceMouseUpListener(event) {
   event.preventDefault();
+  let slot = document.getElementsByClassName('placeholder');
+
+  if (slot.length > 0) {
+    // TODO: drag-n-drop multiple tiles
+    slot = slot[0];
+  } else {
+    slot = undefined;
+  }
+
   Array.from(document.getElementsByClassName('moving')).forEach((p) => {
     p.classList.remove('moving');
     p.style.zIndex = 1;
+
+    if (slot) {
+      slot.classList.remove('placeholder');
+      let top = p.dataset.oldTop;
+      let left = p.dataset.oldLeft;
+
+      // check if slot contains a piece
+      if (!slot.dataset.pieceId) {
+        // check if neighbors support this piece
+        if (matchNeighbors(slot, p)) {
+          p.dataset.slotId = slot.id;
+          slot.dataset.pieceId = p.id;
+          top = slot.offsetTop + 6; // padding + border
+          left = slot.offsetLeft + 6;
+        } else {
+          notify(alerts.noMatch);
+          if (p.dataset.oldSlotId) {
+            previousSlot = document.getElementById(p.dataset.oldSlotId);
+            previousSlot.dataset.pieceId = p.id
+            p.dataset.slotId = p.dataset.oldSlotId;
+            delete p.dataset.oldSlotId;
+          }
+        }
+      } else {
+        notify(alerts.occupied);
+        if (p.dataset.oldSlotId) {
+          previousSlot = document.getElementById(p.dataset.oldSlotId);
+          previousSlot.dataset.pieceId = p.id
+          p.dataset.slotId = p.dataset.oldSlotId;
+          delete p.dataset.oldSlotId;
+        }
+      }
+
+      // Set new piece position
+      p.dataset.oldTop = top;
+      p.dataset.oldLeft = left;
+      p.style.top = top;
+      p.style.left = left;
+    }
+
+    delete p.dataset.oldSlotId;
   });
+
+  if (isSolved()) {
+    endGame();
+  }
 }
