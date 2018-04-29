@@ -1,0 +1,65 @@
+<html>
+<head>
+    <title>TetraVex</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="../../node_modules/mdbootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../node_modules/mdbootstrap/css/mdb.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="container-fluid" id="top">
+        <div class="row">
+            <div class="col-sm">
+                <h1>TetraVex</h1>
+            </div>
+            <div class="col-sm">
+                <h1>Moves: <span id="game_moves">0</span></h1>
+            </div>
+            <div class="col-sm">
+                <h1>Timer: <span id="game_timer">0 seconds</span></h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="md-form">
+                            <h3>Board Height</h3>
+                            <input type="number" class="form-control" id="board_height" placeholder="Enter the number of rows" value="4">
+                        </div>
+                    </div>
+                    <div class="col-sm">
+                        <div class="md-form">
+                            <h3>Board Width</h3>
+                            <input type="number" class="form-control" id="board_width" placeholder="Enter the number of columns" value="4">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm">
+                        <button id="new_game" class="btn btn-lg btn-primary">New Game</button>
+                        <button id="pause_game" class="btn btn-lg btn-primary">Pause</button>
+                        <button id="reset_game" class="btn btn-lg btn-primary">Reset</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm">
+                <div id="notifier"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game_board">
+        <div id="board"></div>
+        <h1 id="paused">Game is paused!</h1>
+    </div>
+
+    <script>require('./app');</script>
+</body>
+</html>

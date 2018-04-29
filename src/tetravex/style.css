@@ -4,6 +4,13 @@ html, body {
     color: #bbbbbb;
 }
 
+#board_height, #board_width {
+    color: #bbbbbb;
+    font-weight: 800;
+    padding-left: 20px;
+    font-size: 24px;
+}
+
 #top {
     width: 100%;
 }
@@ -22,46 +29,8 @@ html, body {
     padding-left: 10px;
 }
 
-
-/* #game_details {
-    display: inline-block;
-} */
-
 #game_inputs > div {
     display: inline-block;
-}
-
-#inputs {
-    float: left;
-    /* display: inline-block; */
-    width: 49%;
-}
-
-#notifier {
-    float: left;
-    height: 100px;
-    max-height: 100px;
-    width: 49%;
-}
-
-#notifier .notify {
-    padding: 0px 10px;
-}
-
-#notifier .error {
-    color: #ffffff;
-    background-color: #dc3545;
-    border: 1px solid #b72b39;
-}
-
-#notifier .success {
-    color: #ffffff;
-    background-color: #4f8b1d;
-    border: 1px solid #355f13;
-}
-
-.row {
-
 }
 
 .col {
@@ -71,6 +40,13 @@ html, body {
     background-color: #555555;
     height: 100px;
     width: 100px;
+}
+
+#paused {
+    font-size: 64px;
+    display: none;
+    color: #333333;
+    text-align: center;
 }
 
 .placeholder {
@@ -96,20 +72,20 @@ html, body {
 
 .top_val {
     top: -48px;
-    left: -6px;
+    left: -7px;
 }
 
 .left_val {
-    top: -48px;
+    top: -60px;
     left: -42px;
 }
 
 .bottom_val {
-    top: -80px;
+    top: -114px;
     left: -6px;
 }
 
 .right_val {
-    top: -80px;
+    top: -102px;
     left: 28px;
 }

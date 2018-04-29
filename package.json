@@ -1,0 +1,30 @@
+{
+  "name": "tetravex",
+  "version": "1.0.0",
+  "description": "A 2D puzzle game.",
+  "main": "app.js",
+  "scripts": {
+    "start": "electron ./app.js",
+    "build": "",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pbarnum/TetraVex.git"
+  },
+  "keywords": [
+    "game",
+    "puzzle",
+    "tetravex"
+  ],
+  "author": "Patrick Barnum <patrickdbarnum@gmail.com",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/pbarnum/TetraVex/issues"
+  },
+  "homepage": "https://github.com/pbarnum/TetraVex#readme",
+  "devDependencies": {
+    "electron": "1.8.6",
+    "mdbootstrap": "^4.5.1"
+  }
+}

@@ -1,38 +1,18 @@
 <html>
 <head>
     <title>TetraVex</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="./node_modules/mdbootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./node_modules/mdbootstrap/css/mdb.min.css" rel="stylesheet">
+
 </head>
 
 <body>
-    <div id="top">
-        <div id="inputs">
-            <h1>TetraVex</h1>
-            <div id="inputs">
-                <div id="game_inputs">
-                    <div>Board Height: <input id="board_height" type="number" /></div>
-                    <div>Board Width: <input id="board_width" type="number" /></div>
-                </div>
-
-                <div id="game_details">
-                    <div>Timer: <span id="game_timer">0 seconds</span></div>
-                </div>
-
-                <div id="game_buttons">
-                    <button id="new_game">New Game</button>
-                    <button id="pause_game">Pause</button>
-                    <button id="reset_game">Reset</button>
-                </div>
-            </div>
-        </div>
-        <div id="notifier"></div>
-    </div>
-
-    <div id="game_board">
-        <div id="board"></div>
-    </div>
-
-    <script src="app.js"></script>
+    <div>Welcome</div>
+    <script>require('./src/main/renderer');</script>
 </body>
 </html>
